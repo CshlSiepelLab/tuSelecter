@@ -9,7 +9,14 @@ depmixS4
 rtracklayer
 doParallel
 
+This application requires a preprocessed form of transcripts obtained from a gtf file. The build_txtable.sh script will do this for you.
+
+./build_txtable.sh gencode.v19.annotation.gtf > txtable.out
+
+Then you run the tuSelecter.R program.
 For more information run: 
-tuSelNew.R --help 
+tuSelecter.R --help 
+
+
 
  
