@@ -170,6 +170,6 @@ tuList.all[,LINK:=NULL]
 tuList.all=tuList.all[order(TXCHROM,TXSTART,TXEND)]
 
 ## Write out all TUs and their RT scores
-write.table(tuList.all,file=file.path(args$out,"final_tus.txt"),row.names=FALSE)
+write.table(tuList.all,file=file.path(args$out,"final_tus.txt"),row.names=FALSE,quote=FALSE)
 
 write("Done!",file=log,append=TRUE)
