@@ -121,7 +121,10 @@ big.filter=big[((perTuAgree>=0.8 & perTuRplAgree>=0.5) | (fMAD<=500 & tMAD <=500
 ### Produce consensus calls
 tx.db=unique(rbindlist(tus)[,1:8,with=FALSE])
 con.tx=tx.db[TXNAME %in% big.filter$consensus]
+setnames(con.tx,"TXNAME","TXID")
+con.tx[,GENEID:=NULL]
+setorder(con.tx,"TXCHROM","TXSTART","TXEND","GENENAME","TXID","TXTYPE","TXSTRAND")
 
 ## Write output
-write.table(big,file.path(args$out,"consensus_stats.txt"),row.names=FALSE)
-write.table(con.tx,file.path(args$out,"consensus_tus.txt"),row.names=FALSE)
+write.table(big,file.path(args$out,"consensus_stats.txt"),row.names=FALSE,quote=FALSE,sep="\t")
+write.table(con.tx,file.path(args$out,"consensus_tus.txt"),row.names=FALSE,quote=FALSE,sep="\t")
