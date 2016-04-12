@@ -16,6 +16,7 @@ args <- parser$parse_args()
 
 source("consensusLib.R")
 dir.create(args$out)
+dir.create(file.path(args$out,"qc_plots"))
 pFile=fread(args$pathList)
 
 ## Save column names and rename
@@ -94,17 +95,22 @@ for(i in sort(unique(pFile$rid))){
 concord.rpl.all=rbindlist(concord.rpl.co)
 ##hist(concord.rpl.all$fMAD,breaks=100)
 ## Fraction of Tus that have different starts between replicates
-sum(concord.rpl.all$fMAD==0,na.rm=TRUE)/sum(!is.na(concord.rpl.all$fMAD))
-sum(concord.rpl.all$tMAD==0,na.rm=TRUE)/sum(!is.na(concord.rpl.all$tMAD))
+## sum(concord.rpl.all$fMAD==0,na.rm=TRUE)/sum(!is.na(concord.rpl.all$fMAD))
+## sum(concord.rpl.all$tMAD==0,na.rm=TRUE)/sum(!is.na(concord.rpl.all$tMAD))
 ## Quantile distiribtion of MAD
-quantile(concord.rpl.all$fMAD,na.rm=TRUE,c(seq(0,0.9,0.05),seq(0.9,1,0.01)))
-quantile(concord.rpl.all$tMAD,na.rm=TRUE,c(seq(0,0.9,0.05),seq(0.9,1,0.01)))
+## quantile(concord.rpl.all$fMAD,na.rm=TRUE,c(seq(0,0.9,0.05),seq(0.9,1,0.01)))
+## quantile(concord.rpl.all$tMAD,na.rm=TRUE,c(seq(0,0.9,0.05),seq(0.9,1,0.01)))
 
 
 # concord.rpl.dist.rt/sum(concord.rpl.dist.rt)
 
 ## Look at concordance across all runs
 concord.all.co <- calcCoordConcordance(tus)
+
+## Compute Mean GOF for each transcript
+source("consensusLib.R")
+gof.mean=calcPerTxMeanGof(tus)
+setnames(gof.mean,"TXNAME","consensus")
 
 ##
 ## Merge all of these into one big table that can then be used (along with GOF) to pick consensus call
@@ -113,10 +119,17 @@ big=merge(concord.all,mean.tu.rpl.agree,by="GENEID",all=TRUE)
 big=merge(big,concord.all.rt,by="GENEID",all=TRUE)
 big=merge(big,mean.rt.rpl.agree,by="GENEID",all=TRUE) 
 big=merge(big,concord.all.co,by="GENEID",all.x=TRUE)
+big=merge(big,gof.mean,by=c("GENEID","consensus"),all.x=TRUE)
+big=merge(big,rbindlist(tus)[,c("GENEID","TXTYPE"),with=FALSE],by="GENEID",all.x=TRUE)
 
 ## Filter by some criteria
 ## Either the calls are highly concordant or they tend to have very close beginnings and endings
 big.filter=big[((perTuAgree>=0.8 & perTuRplAgree>=0.5) | (fMAD<=500 & tMAD <=500)) & percent.rt<=0.5,]
+
+## Print out some QC plots
+qcPlots(big,file.path(args$out,"qc_plots"),"unfiltered")
+qcPlots(big.filter,file.path(args$out,"qc_plots"),"filtered")
+
 
 ### Produce consensus calls
 tx.db=unique(rbindlist(tus)[,1:8,with=FALSE])

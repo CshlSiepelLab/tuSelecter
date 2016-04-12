@@ -9,6 +9,7 @@ args$out="/sonas-hs/siepel/hpc_norepl/home/ndukler/Projects/celastrol/results/tu
 
 library(data.table)
 library(doParallel)
+library(ggplot2)
 
 ## Rename columns so later code can assume column names
 renameCols <- function(pFile){
@@ -123,4 +124,52 @@ calcCoordConcordance <- function(sub.tus){
     tMAD[,row:=NULL]
 
     return(data.table(GENEID=fMAD$GENEID,fMAD=fMAD$mad,tMAD=tMAD$mad))   
+}
+
+## Compute the mean reported GOF for each transcript id 
+calcPerTxMeanGof <- function(tus){
+    tx.all=rbindlist(tus)
+    tx.gof=tx.all[,mean(gof),by=list(TXNAME,GENEID)]
+    setnames(tx.gof,"V1","mean.gof")
+    return(tx.gof)
+}
+
+## Produce some graphs and logs to give people an idea of the quality of their output
+## in the unfiltered set.
+qcPlots <- function(qc.table,out,label){
+## First a graph of the average percenteage of tus that agree
+    pdf(file.path(out,paste0("percentTuAgree_",label,".pdf")))
+    ggplot(qc.table,aes(x=perTuAgree))+
+        geom_histogram()
+    dev.off
+
+    pdf(file.path(out,paste0("percentTuAgreeByTxtype_",label,".pdf")))
+    ggplot(qc.table,aes(x=perTuAgree))+
+        facet_wrap(~TXTYPE)+
+            geom_histogram()
+    dev.off()
+    
+    ## Then show mean GOF
+    pdf(file.path(out,paste0("gof.pdf_",label,".pdf")))
+    ggplot(qc.table,aes(x=mean.gof))+
+    geom_histogram()
+    dev.off()
+    
+    pdf(file.path(out,paste0("gofByTxtype_",label,".pdf")))
+    ggplot(qc.table,aes(x=mean.gof))+
+        facet_wrap(~TXTYPE)+
+            geom_histogram()
+    dev.off()
+    
+    ## Show the percent with RT
+    pdf(file.path(out,paste0("runthroughtByTxtype_",label,".pdf")))
+    ggplot(qc.table,aes(x=percent.rt))+
+    geom_histogram()
+    dev.off()
+    
+    pdf(file.path(out,paste0("runthroughByTxtype_",label,".pdf")))
+    ggplot(qc.table,aes(x=percent.rt))+
+        facet_wrap(~TXTYPE)+
+            geom_histogram()
+    dev.off()    
 }
