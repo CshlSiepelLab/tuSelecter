@@ -139,37 +139,43 @@ calcPerTxMeanGof <- function(tus){
 qcPlots <- function(qc.table,out,label){
 ## First a graph of the average percenteage of tus that agree
     pdf(file.path(out,paste0("percentTuAgree_",label,".pdf")))
-    ggplot(qc.table,aes(x=perTuAgree))+
+    g <- ggplot(qc.table,aes(x=perTuAgree))+
         geom_histogram()
+    plot(g)
     dev.off
 
     pdf(file.path(out,paste0("percentTuAgreeByTxtype_",label,".pdf")))
-    ggplot(qc.table,aes(x=perTuAgree))+
+    g <- ggplot(qc.table,aes(x=perTuAgree))+
         facet_wrap(~TXTYPE)+
             geom_histogram()
+    plot(g)
     dev.off()
     
     ## Then show mean GOF
     pdf(file.path(out,paste0("gof.pdf_",label,".pdf")))
-    ggplot(qc.table,aes(x=mean.gof))+
-    geom_histogram()
+    g <- ggplot(qc.table,aes(x=mean.gof))+
+        geom_histogram()
+    plot(g)
     dev.off()
     
     pdf(file.path(out,paste0("gofByTxtype_",label,".pdf")))
-    ggplot(qc.table,aes(x=mean.gof))+
+    g <- ggplot(qc.table,aes(x=mean.gof))+
         facet_wrap(~TXTYPE)+
             geom_histogram()
+    plot(g)
     dev.off()
     
     ## Show the percent with RT
     pdf(file.path(out,paste0("runthroughtByTxtype_",label,".pdf")))
-    ggplot(qc.table,aes(x=percent.rt))+
-    geom_histogram()
+    g <- ggplot(qc.table,aes(x=percent.rt))+
+        geom_histogram()
+    plot(g)
     dev.off()
     
     pdf(file.path(out,paste0("runthroughByTxtype_",label,".pdf")))
-    ggplot(qc.table,aes(x=percent.rt))+
+    g <- ggplot(qc.table,aes(x=percent.rt))+
         facet_wrap(~TXTYPE)+
             geom_histogram()
+    plot(g)
     dev.off()    
 }
