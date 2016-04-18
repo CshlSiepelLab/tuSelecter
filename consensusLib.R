@@ -2,10 +2,10 @@
 
 ## Library of functions to do consensus calling from multiple TuSelecter calls
 
-args=list()
-args$pathList="/sonas-hs/siepel/hpc_norepl/home/ndukler/Projects/celastrol/results/tu_selecter_new/finalTuPath.txt"
-args$parallel=2
-args$out="/sonas-hs/siepel/hpc_norepl/home/ndukler/Projects/celastrol/results/tu_selecter_new/consensus_tus"
+## args=list()
+## args$pathList="/sonas-hs/siepel/hpc_norepl/home/ndukler/Projects/celastrol/results/tu_selecter_new/finalTuPath.txt"
+## args$parallel=2
+## args$out="/sonas-hs/siepel/hpc_norepl/home/ndukler/Projects/celastrol/results/tu_selecter_new/consensus_tus"
 
 library(data.table)
 library(doParallel)
