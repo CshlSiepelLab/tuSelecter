@@ -124,7 +124,8 @@ big=merge(big,rbindlist(tus)[,c("GENEID","TXTYPE"),with=FALSE],by="GENEID",all.x
 
 ## Filter by some criteria
 ## Either the calls are highly concordant or they tend to have very close beginnings and endings
-big.filter=big[((perTuAgree>=0.8 & perTuRplAgree>=0.5) | (fMAD<=500 & tMAD <=500)) & percent.rt<=0.5,]
+## big.filter=big[((perTuAgree>=0.8 & perTuRplAgree>=0.5) | (fMAD<=500 & tMAD <=500)) & percent.rt<=0.5,]
+big.filter=big[((perTuAgree>=0.8 & perTuRplAgree>=0.5) | (fMAD<=500 & tMAD <=500)),] ## don't filter on RT right now, unhappy with performance of caller
 
 ## Print out some QC plots
 qcPlots(big,file.path(args$out,"qc_plots"),"unfiltered")
