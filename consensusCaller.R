@@ -15,6 +15,11 @@ parser$add_argument("-p","--parallel",help="Number of cores to use",default=1)
 
 args <- parser$parse_args()
 
+## args=list()
+## args$pathList="~/Projects/celastrol/results/tu_selecter_new/finalTuPath.txt"
+## args$out="~/Projects/celastrol/results/tu_selecter_new/consensus_tus"
+## args$parallel=4
+
 source("consensusLib.R")
 dir.create(args$out)
 dir.create(file.path(args$out,"qc_plots"))
@@ -121,13 +126,12 @@ big=merge(big,concord.all.rt,by="GENEID",all=TRUE)
 big=merge(big,mean.rt.rpl.agree,by="GENEID",all=TRUE) 
 big=merge(big,concord.all.co,by="GENEID",all.x=TRUE)
 big=merge(big,gof.mean,by=c("GENEID","consensus"),all.x=TRUE)
-big=merge(big,rbindlist(tus)[,c("GENEID","TXTYPE"),with=FALSE],by="GENEID",all.x=TRUE)
+big=merge(big,tus[[1]][,c("GENEID","TXTYPE"),with=FALSE],by="GENEID",all.x=TRUE)
 
 ## Filter by some criteria
 ## Either the calls are highly concordant or they tend to have very close beginnings and endings
 ## big.filter=big[((perTuAgree>=0.8 & perTuRplAgree>=0.5) | (fMAD<=500 & tMAD <=500)) & percent.rt<=0.5,]
 big.filter=big[((perTuAgree>=0.8 & perTuRplAgree>=0.5) | (fMAD<=500 & tMAD <=500)),] ## don't filter on RT right now, unhappy with performance of caller
-
 ## Print out some QC plots
 qcPlots(big,file.path(args$out,"qc_plots"),"unfiltered")
 qcPlots(big.filter,file.path(args$out,"qc_plots"),"filtered")
@@ -139,6 +143,7 @@ con.tx=tx.db[TXNAME %in% big.filter$consensus]
 setnames(con.tx,"TXNAME","TXID")
 con.tx[,GENEID:=NULL]
 setorder(con.tx,"TXCHROM","TXSTART","TXEND","GENENAME","TXID","TXTYPE","TXSTRAND")
+con.tx=unique(con.tx)
 
 ## Write output
 write.table(big,file.path(args$out,"consensus_stats.txt"),row.names=FALSE,quote=FALSE,sep="\t")
