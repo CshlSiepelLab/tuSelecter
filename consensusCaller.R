@@ -10,7 +10,13 @@
 suppressMessages(library(argparse))
 parser <- ArgumentParser(description="Select transcriptional models based on data.")
 parser$add_argument("pathList",help="File containing all paths to final_tus.txt.")
-parser$add_argument("out",help="Directory to write consensus calls to") 
+parser$add_argument("out",help="Directory to write consensus calls to")
+parser$add_argument("-p","--parallel",help="Number of cores to use",default=1) 
+
+
+args = list()
+args$pathList="~/Projects/celastrol/results/tu_selecter_new/finalTuPath.txt"
+args$out="~/Projects/celastrol/results/tu_selecter_new/consensus_tus"
 
 args <- parser$parse_args()
 
