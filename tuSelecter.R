@@ -60,8 +60,8 @@ rm(list=c("geneTiles.gr"))
 ## Set up parameters for TU selection
 p.grid=seq(0.3,1,.05)
 p.grid.back=seq(0.01,.03,.01)
-trans.params=expand.grid(p.grid)
-back.params=expand.grid(p.grid.back)
+trans.params=expand.grid(p.grid) ## Emmision probabilities for the transcribed region
+back.params=expand.grid(p.grid.back) ## Emmision probabilities for the untranscribed region
 
 uID=unique(txTable.filtered$ensg.id)
 ## Split uID into chunks
