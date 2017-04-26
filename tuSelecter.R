@@ -70,7 +70,7 @@ split.uID=split(uID, ceiling(seq_along(uID)/(length(uID)/args$parallel)))
 ## Run TU selection in parallel
 write("Selecting TUs (this may take a while)...",file=log,append=TRUE)
 system.time(tuList <- rbindlist(mclapply(split.uID, function(x){
-    out=rbindlist(apply(as.matrix(x),1,function(x) geneTuSelect(ensg.id=x,txTable.gr=txTable.filtered.gr,
+    out=rbindlist(apply(as.matrix(x),1,function(y) geneTuSelect(ensg.id=y,txTable.gr=txTable.filtered.gr,
         geneTileSums,trans.params,back.params)))
 },mc.preschedule=FALSE, mc.cores = args$parallel)))
 

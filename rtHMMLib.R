@@ -121,12 +121,11 @@ sumBwOverGR <- function(tu.list,bw.list){
 calc.indicator <- function(models.gr,bins,bin.size){
     ## Find bins that overlap each transcript model by <= 50%
     overlaps = findOverlaps(models.gr,bins,minoverlap = 0.5*bin.size)
-    
     ## Compute indicator function for bins
     indicator=list()
-    for(i in unique(overlaps@queryHits)){
-        indicator[[i]]= list(trans=overlaps@subjectHits[overlaps@queryHits==i],
-                     un.trans=setdiff(unique(overlaps@subjectHits),overlaps@subjectHits[overlaps@queryHits==i]))
+    for(i in unique(overlaps@from)){
+        indicator[[i]]= list(trans=overlaps@to[overlaps@from==i],
+                     un.trans=setdiff(unique(overlaps@to),overlaps@to[overlaps@from==i]))
     }
     return(indicator)
 }
