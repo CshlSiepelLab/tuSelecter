@@ -70,7 +70,7 @@ getChromInfo <- function(bwPaths,which.chrom=NULL){
                 cur=cur[names(cur) %in% which.chrom]
             }
             if(sum(!unlist(Map("==",chromInfo,cur)))>0){
-                stop(paste("Bigwig", bwPaths[i],"was built with a different chromInfo file than", sub.edt$file[1]))
+                stop(paste("Bigwig", bwPaths[i],"was built with a different chromInfo file than",  bwPaths[1]))
             }
         }
     }
