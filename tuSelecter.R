@@ -33,7 +33,7 @@ txTable.filtered.gr=txTableToGR(txTable.filtered)
 ## Read in bigWigs
 write("Reading in bigwigs...",file=log,append=TRUE)
 bw=readBw(args$bwp,args$bwm)
-
+chromInfo=getChromInfo(c(args$bwm,args$bwp))
 ###############
 ## TU SELECTION
 ###############
@@ -43,7 +43,7 @@ geneTab=boundTxModels(txTable.filtered)
 
 ## Convert geneTab models into bins
 write("Tiling transcript models...",file=log,append=TRUE)
-geneTiles=tileTus(geneTab,tile=args$tile)
+geneTiles=tileTus(geneTab,tile=args$tile,chromInfo)
 geneTiles.gr=tileToGR(geneTiles)
 rm(list=c("geneTiles"))
 

@@ -1,17 +1,5 @@
 #!/usr/bin/env Rscript
 
-##Test arguments
-## args=list()
-## args$txtable="/sonas-hs/siepel/hpc_norepl/home/ndukler/Projects/rawDataRepo/hg19/gencode/gencode.txtable.v19.txt"
-## args$bwp="/home.bnb/ndukler/Projects/celastrol/data/bigwig/primary/6045_7157_27170_HNHKJBGXX_K562_0min_celastrol10uM_rep1_GB_ATCACG_R1_plus.primary.bw"
-## args$bwm="/home.bnb/ndukler/Projects/celastrol/data/bigwig/primary/6045_7157_27170_HNHKJBGXX_K562_0min_celastrol10uM_rep1_GB_ATCACG_R1_minus.primary.bw"
-## args$up_window=10^5
-## args$tile=100
-## args$parallel=4
-## args$out="/sonas-hs/siepel/hpc_norepl/home/ndukler/Projects/celastrol/results/tu_selecter/temp"
-
-
-
 ## Import libraries
 library(data.table)
 library(depmixS4)
@@ -67,13 +55,42 @@ readBw <- function(plus,minus){
     return(out)
 }
 
+## Gets ranges of bigwig files
+getChromInfo <- function(bwPaths,which.chrom=NULL){
+    rl <- BigWigSelection(IRangesList(IRanges(-1,-1)))
+    chromInfo = lapply(import(con=bwPaths[1],selection=rl,as='RleList'),function(x){return(x@lengths)})
+    ## If a specific set of chromosomes is specified only get info for that list of chromosomes
+    if(!is.null(which.chrom)){
+        chromInfo=chromInfo[names(chromInfo) %in% which.chrom]
+    }
+    if(length(bwPaths)>1){
+        for(i in 2:length(bwPaths)){
+            cur=lapply(import(con=as.character(bwPaths[i]),selection=rl,as='RleList'),function(x){return(x@lengths)})
+            if(!is.null(which.chrom)){
+                cur=cur[names(cur) %in% which.chrom]
+            }
+            if(sum(!unlist(Map("==",chromInfo,cur)))>0){
+                stop(paste("Bigwig", bwPaths[i],"was built with a different chromInfo file than", sub.edt$file[1]))
+            }
+        }
+    }
+    return(chromInfo)
+}
+
 ## Takes in 5 column table, table must contain chr,start,end,strand,symbol. The symbol column can be in
 ## any position and have any name. It will be renamed as symbol however in the output. 
-tileTus <- function(geneTab,tile){
+tileTus <- function(geneTab,tile,chromInfo){
     ## write("Tiling genes...",stdout())
     ## Figure out which column contains the symbol
     symCol=which(!colnames(geneTab) %in% c("chr","start","end","strand"))
-        
+
+    ## Remove chromosomes that are not in the bigWig
+    if(sum(!unique(geneTab$chr) %in% names(chromInfo))>0){
+        excl=unique(geneTab$chr)[!unique(geneTab$chr) %in% names(chromInfo)]
+        write(paste(paste(excl,collapse=","),"not in the bigWig seq info and has been removed from the queries."),file=log,append=TRUE)
+        geneTab=geneTab[geneTab$chr %in% names(chromInfo)]
+    }
+    
     ## Split transcripts by strand
     geneTabP=geneTab[geneTab$strand=="+",]
     geneTabM=geneTab[geneTab$strand=="-",]
@@ -95,10 +112,10 @@ tileTus <- function(geneTab,tile){
 
 ## Converts tiles to a GRanges object
 tileToGR <- function(tus){
-     # Convert to granges objects
-     tus.plus.gr=with(tus$plus, GRanges(chr, IRanges(start=start,end=end,name=symbol), strand="+"))
-     tus.minus.gr=with(tus$minus, GRanges(chr, IRanges(start=start,end=end,name=symbol), strand="-"))
-     return(list(plus=tus.plus.gr,minus=tus.minus.gr))
+    ## Convert to granges objects
+    tus.plus.gr=with(tus$plus, GRanges(chr, IRanges(start=start,end=end,name=symbol), strand="+"))
+    tus.minus.gr=with(tus$minus, GRanges(chr, IRanges(start=start,end=end,name=symbol), strand="-"))       
+    return(list(plus=tus.plus.gr,minus=tus.minus.gr))
 }
 
 ## Sums reads in GRranges object
@@ -108,7 +125,7 @@ sumBwOverGR <- function(tu.list,bw.list){
     tu.list$plus$sum=-1
     tu.list$minus$sum=-1
     for(chr in unique(seqnames(tu.list$plus))) {
-        tu.list$plus[seqnames(tu.list$plus) == chr]$sum=as.numeric(sum(Views(bw.list[["+"]][[as.character(chr)]], ranges(tu.list$plus[seqnames(tu.list$plus) == chr]))))
+        tu.list$plus[seqnames(tu.list$plus) == chr]$sum=as.numeric(sum(Views(bw.list[["+"]][[as.character(chr)]], ranges(tu.list$plus[seqnames(tu.list$plus) == chr]))))      
     }
     for(chr in unique(seqnames(tu.list$minus))) {
         tu.list$minus[seqnames(tu.list$minus) == chr]$sum=abs(as.numeric(sum(Views(bw.list[["-"]][[as.character(chr)]], ranges(tu.list$minus[seqnames(tu.list$minus) == chr])))))                
