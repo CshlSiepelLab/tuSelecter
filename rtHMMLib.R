@@ -31,8 +31,12 @@ readTxTable <- function(filename){
 }
 
 ## Removes transcripts that do not meet requirement to be analyzed
-filterTxTable <- function(txTable,tile){
-    txTable=txTable[end-start>tile]
+filterTxTable <- function(txTable,tile,chrom){
+    if(nrow(txTable[!(end-start>tile & chr %in% chrom)])>0){
+        write("Filtering out un-modelable transcripts...",file=log,append=TRUE)
+        write(paste(txTable[!(end-start>tile & chr %in% chrom)]$ensg.id,collapse="\n"),file=log,append=TRUE)
+    }
+    txTable=txTable[end-start>tile & chr %in% chrom]
     return(txTable)
 }
 
@@ -79,17 +83,10 @@ getChromInfo <- function(bwPaths,which.chrom=NULL){
 
 ## Takes in 5 column table, table must contain chr,start,end,strand,symbol. The symbol column can be in
 ## any position and have any name. It will be renamed as symbol however in the output. 
-tileTus <- function(geneTab,tile,chromInfo){
+tileTus <- function(geneTab,tile){
     ## write("Tiling genes...",stdout())
     ## Figure out which column contains the symbol
     symCol=which(!colnames(geneTab) %in% c("chr","start","end","strand"))
-
-    ## Remove chromosomes that are not in the bigWig
-    if(sum(!unique(geneTab$chr) %in% names(chromInfo))>0){
-        excl=unique(geneTab$chr)[!unique(geneTab$chr) %in% names(chromInfo)]
-        write(paste(paste(excl,collapse=","),"not in the bigWig seq info and has been removed from the queries."),file=log,append=TRUE)
-        geneTab=geneTab[geneTab$chr %in% names(chromInfo)]
-    }
     
     ## Split transcripts by strand
     geneTabP=geneTab[geneTab$strand=="+",]

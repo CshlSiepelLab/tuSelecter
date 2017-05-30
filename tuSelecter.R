@@ -22,18 +22,19 @@ source("rtHMMLib.R")
 ## Set-up directory structure
 dir.create(args$out)
 
+## Read in bigWigs
+write("Reading in bigwigs...",file=log,append=TRUE)
+bw=readBw(args$bwp,args$bwm)
+chromInfo=getChromInfo(c(args$bwm,args$bwp))
+
 ## Read in transcript models
 write("Reading in transcript models...",file=log)
 txTable=readTxTable(args$txtable)
 ## Filter out transcripts that are too small to be analyzed
 write("Filtering transcript models...",file=log,append=TRUE)
-txTable.filtered=filterTxTable(txTable,args$tile)
+txTable.filtered=filterTxTable(txTable,args$tile,unique(names(chromInfo)))
 txTable.filtered.gr=txTableToGR(txTable.filtered)
 
-## Read in bigWigs
-write("Reading in bigwigs...",file=log,append=TRUE)
-bw=readBw(args$bwp,args$bwm)
-chromInfo=getChromInfo(c(args$bwm,args$bwp))
 ###############
 ## TU SELECTION
 ###############
@@ -43,7 +44,7 @@ geneTab=boundTxModels(txTable.filtered)
 
 ## Convert geneTab models into bins
 write("Tiling transcript models...",file=log,append=TRUE)
-geneTiles=tileTus(geneTab,tile=args$tile,chromInfo)
+geneTiles=tileTus(geneTab,tile=args$tile)
 geneTiles.gr=tileToGR(geneTiles)
 rm(list=c("geneTiles"))
 
